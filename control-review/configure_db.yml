@@ -1,0 +1,41 @@
+---
+- name: MariaDB server is instaled 
+  hosts: database_dev
+  vars:
+    db_packages:
+      - mariadb-server
+      - python3-PyMySQL
+    db_service: mariadb
+    reosurces_url:  /home/student/control-handlers
+    config_file_url:  "{{reosurces_url}}/my.cnf.standard"
+    config_file_dst:  /etc/my.cf
+  tasks:
+    - name: "{{db_packages}} are installed "
+      yum:
+        name: "{{db_packages}}"
+        state:  latest
+      notify:
+        - set db  password
+    - name: Make sure the databaase service is running
+      service:  
+        name: "{{db_service}}"
+        state:  started
+        enabled:  true
+    - name: "the  {{config_file_dst}} file hase been installed"
+      copy:
+        src: "{{config_file_url}}"
+        dest: "{{config_file_dst}}"
+        owner:  mysql
+        group:  mysql
+        force:  yes 
+      notify:
+        - restart db service
+  handlers:
+    - name: restart db service
+      service:
+        name: "{{db_service}}"
+        state:  restarted
+    - name: set db  password
+      mysql_user:
+        name: root
+        password: redhat

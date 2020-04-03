@@ -1,0 +1,22 @@
+---
+- name: MariaDB server is running
+  hosts: database_prod
+  vars:
+
+  tasks:
+  - name: Attempt to set up a webserver
+    block:
+     - name: "{{web_packages}} install the package"
+       yum:
+         name: "{{ web_packages }}"
+         state: present
+    rescue:     
+     - name: Install "{{db_ppackages}}" package
+       yum:
+         name: "{{ db_ppackages }}"
+         state: present
+    always:
+     - name:  Start "{{db_service}}" service
+       service: 
+        name: "{{db_service}}"
+        state:  started
